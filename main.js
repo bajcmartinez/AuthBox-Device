@@ -50,11 +50,21 @@ async function handlePollForTokens() {
     }, codesResponse.interval * 1000);
 };
 
+// URL-Safe Base64 Encoder
+function encodeUrlSafeBase64(input) {
+  // Convert the input string to a Base64 string
+  const base64 = btoa(input);
+  // Make the Base64 string URL-safe by replacing characters
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 async function handleRequestCodes() {
     try {
         codesResponse = await getDeviceCode();
-        
-        await createQRCode(canvasElement, codesResponse['verification_uri_complete']);
+
+	const verificationURI = codesResponse['verification_uri_complete'];
+	const botURL = `https://lockbox-agent.auth0.works/?code=${encodeUrlSafeBase64(verificationURI)}`;
+        await createQRCode(canvasElement, botURL);
         userCodeElement.innerHTML = codesResponse['user_code'];
         
         startElement.classList.toggle('hidden');
